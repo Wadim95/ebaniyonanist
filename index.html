@@ -6,110 +6,98 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root { --blue: #007aff; --bg: #0b0b0c; --card: #161618; }
-        body { background: var(--bg); color: #fff; font-family: sans-serif; margin: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; overflow-x: hidden; }
+        body { background: var(--bg); color: #fff; font-family: sans-serif; margin: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
         
-        .u-panel { width: 90%; background: var(--card); border-radius: 15px; padding: 15px; margin-top: 20px; border: 1px solid #222; display: flex; justify-content: space-between; align-items: center; box-sizing: border-box; }
-        .u-rank { color: var(--blue); font-size: 10px; text-transform: uppercase; font-weight: 900; }
+        .u-panel { width: 90%; background: var(--card); border-radius: 15px; padding: 15px; margin-top: 20px; border: 1px solid #222; display: flex; justify-content: space-between; box-sizing: border-box; }
         
-        .w { position: relative; width: 100%; height: 80px; background: var(--card); overflow: hidden; display: flex; align-items: center; border-top: 1px solid #333; border-bottom: 1px solid #333; margin: 40px 0; }
+        .w { position: relative; width: 100%; height: 80px; background: var(--card); overflow: hidden; display: flex; align-items: center; border-y: 1px solid #333; margin: 40px 0; }
         .l { position: absolute; left: 50%; width: 2px; height: 100%; background: var(--blue); z-index: 5; box-shadow: 0 0 15px var(--blue); }
-        .t { display: flex; position: absolute; left: 0; transition: transform 4s cubic-bezier(0.1, 0, 0, 1); }
+        .t { display: flex; position: absolute; left: 0; }
         .i { min-width: 200px; text-align: center; font-weight: 800; font-size: 13px; text-transform: uppercase; }
         
-        .btn { width: 85%; background: var(--blue); color: #fff; border: none; padding: 18px; border-radius: 16px; font-size: 16px; font-weight: bold; margin-bottom: 20px; box-shadow: 0 0 20px rgba(0,122,255,0.3); cursor: pointer; }
-        .btn:disabled { background: #333; box-shadow: none; }
+        .btn { width: 85%; background: var(--blue); color: #fff; border: none; padding: 18px; border-radius: 16px; font-size: 16px; font-weight: bold; cursor: pointer; z-index: 10; }
+        .btn:disabled { background: #333; opacity: 0.5; }
 
-        #res { text-align: center; padding: 0 20px; min-height: 50px; font-weight: bold; margin-bottom: 10px; }
-        
-        .lb { width: 90%; background: var(--card); border-radius: 15px; padding: 15px; border: 1px solid #222; margin-bottom: 30px; box-sizing: border-box; }
-        .lb-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #222; font-size: 14px; }
-        .lb-item:last-child { border: none; }
-        
-        .c { color: #8e8e93; } .r { color: #af52de; } .lg { color: #ff3b30; } .a { color: #ffcc00; text-shadow: 0 0 10px #ffcc00; }
+        #res { text-align: center; min-height: 50px; font-weight: bold; margin-bottom: 10px; padding: 0 10px; }
+        .c { color: #8e8e93; } .r { color: #af52de; } .lg { color: #ff3b30; } .a { color: #ffcc00; }
     </style>
 </head>
 <body>
 
     <div class="u-panel">
-        <div>
-            <div id="u-name" style="font-weight:bold">Загрузка...</div>
-            <div id="u-status" class="u-rank">Статус: Познание</div>
-        </div>
-        <div style="text-align:right">
-            <div style="font-size:9px; color:#555">ВСЕГО КРУТОК:</div>
-            <div id="u-count" style="font-weight:bold; color:var(--blue)">0</div>
-        </div>
+        <div id="u-name">Загрузка...</div>
+        <div id="u-status" style="color:var(--blue); font-size:10px; font-weight:bold;">LIVE</div>
     </div>
 
-    <div id="res" style="margin-top:30px">ГОТОВ УЗНАТЬ ПРАВДУ?</div>
+    <div id="res" style="margin-top:30px">НАЖМИ, ЧТОБЫ УЗНАТЬ ПРИЧИНУ</div>
 
     <div class="w">
         <div class="l"></div>
         <div id="tape" class="t"></div>
     </div>
 
-    <button class="btn" id="go" onclick="spin()">ОТКРЫТЬ КЕЙС</button>
+    <button class="btn" id="go">ОТКРЫТЬ КЕЙС</button>
 
-    <div class="lb">
-        <div style="font-size:10px; color:#555; margin-bottom:10px; text-transform:uppercase;">Зал Славы (Live)</div>
-        <div id="leaderboard-list" style="color:#444; font-size:12px;">Синхронизация с сервером...</div>
+    <div id="leaderboard" style="width:90%; margin-top:20px; font-size:12px; color:#444;">
+        Синхронизация с залом славы...
     </div>
 
     <script>
+        // 1. Инициализация
         const tg = window.Telegram.WebApp;
         tg.expand();
-        
-        // --- ВСТАВЬ СЮДА ССЫЛКУ С RENDER ---
-        const API_URL = 'https://ebaniyonanist.onrender.com'; 
-        
+
+        const API_URL = 'https://твой-проект.onrender.com'; // ТВОЯ ССЫЛКА
         const user = tg.initDataUnsafe.user || { first_name: 'Грешник', username: 'anon' };
         document.getElementById('u-name').innerText = user.username || user.first_name;
 
         const reasons = [
             {t: "А ХУЛИ НЕТ?", r: "c"}, {t: "СЕРЬЁЗНО?", r: "r"}, {t: "ДЕШЕВЛЕ СВИДАНИЯ", r: "c"},
-            {t: "МАМИН КОВБОЙ", r: "lg"}, {t: "ГЕНОЦИД ГЕНИЕВ", r: "lg"}, {t: "БЕЗ РУЛЕТКИ НИКАК?", r: "r"},
-            {t: "★ МАСТЕР САМООБМАНА", r: "a"}, {t: "★ ПРЕМИЯ ДАРВИНА", r: "a"}, {t: "НЕ ОПРАВДЫВАЙСЯ", r: "r"}
+            {t: "МАМИН КОВБОЙ", r: "lg"}, {t: "ГЕНОЦИД ГЕНИЕВ", r: "lg"}, {t: "★ МАСТЕР САМООБМАНА", r: "a"}
         ];
-        function loadLeaderboard() {
-            fetch(${API_URL}/api/leaderboard)
-                .then(r => r.json())
-                .then(data => {
-                    const list = document.getElementById('leaderboard-list');
-                    list.innerHTML = '';
-                    data.forEach((h, i) => {
-                        list.innerHTML += <div class="lb-item">
-                            <span class="${i===0?'a':''}">${i+1}. ${h.username}</span>
-                            <span style="color:var(--blue)">${h.spins}</span>
-                        </div>;
-                    });
-                })
-                .catch(() => {
-                    document.getElementById('leaderboard-list').innerHTML = 'Сервер просыпается... (подожди 30 сек)';
+
+        // 2. Функция загрузки топа
+        async function loadLeaderboard() {
+            try {
+                const r = await fetch(${API_URL}/api/leaderboard);
+                const data = await r.json();
+                let html = '<div style="margin-bottom:10px">ТОП ГЕРОЕВ:</div>';
+                data.forEach((h, i) => {
+                    html += <div style="display:flex; justify-content:space-between; padding:4px 0; border-bottom:1px solid #222;">
+                        <span>${i+1}. ${h.username}</span><span>${h.spins}</span>
+                    </div>;
                 });
+                document.getElementById('leaderboard').innerHTML = html;
+            } catch (e) {
+                document.getElementById('leaderboard').innerText = "Зал славы временно недоступен";
+            }
         }
 
-        function spin() {
-            const btn = document.getElementById('go');
+        // 3. Главная логика кнопки
+        const btn = document.getElementById('go');
+        btn.addEventListener('click', () => {
+            if(btn.disabled) return;
+            btn.disabled = true;
             const tape = document.getElementById('tape');
             const res = document.getElementById('res');
-            btn.disabled = true;
-            res.className = "";
-            res.innerText = "СУДЬБА РЕШАЕТСЯ...";
             
+            res.innerText = "СУДЬБА РЕШАЕТ...";
             tape.innerHTML = "";
             tape.style.transition = "none";
             tape.style.transform = "translateX(0)";
 
-            const pool = [];
+            // Создаем элементы
+            const items = [];
             for (let i = 0; i < 45; i++) {
-                const item = reasons[Math.floor(Math.random() * reasons.length)];
-                pool.push(item);
+                const it = reasons[Math.floor(Math.random() * reasons.length)];
+                items.push(it);
                 const div = document.createElement('div');
-                div.className = "i " + item.r;
-                div.innerText = item.t;
+                div.className = "i " + it.r;
+                div.innerText = it.t;
                 tape.appendChild(div);
             }
 
+            // Анимация
             setTimeout(() => {
                 const target = 40;
                 const offset = (target * 200) + 100 - (window.innerWidth / 2);
@@ -117,34 +105,24 @@
                 tape.style.transform = translateX(-${offset}px);
 
                 setTimeout(() => {
-                    const win = pool[target];
+                    const win = items[target];
                     res.innerHTML = ВЕРДИКТ: <span class="${win.r}">${win.t}</span>;
-                    
-                    // Отправляем данные
+                    btn.disabled = false;
+                    btn.innerText = "ЕЩЕ РАЗ";
+
+                    // Отправка на сервер (не блокирует кнопку!)
                     fetch(${API_URL}/api/spin, {
                         method: 'POST',
                         headers: {'Content-Type': 'application/json'},
                         body: JSON.stringify({ username: user.username || user.first_name })
-                    }).finally(() => {
-                        loadLeaderboard();
-                        btn.disabled = false;
-                        btn.innerText = "ЕЩЕ РАЗ";
-                    });
+                    }).then(() => loadLeaderboard()).catch(e => console.log("Offline mode"));
 
-                    if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('warning');
                 }, 4100);
             }, 50);
-        }
+        });
 
-        // Запуск
+        // Запуск при старте
         loadLeaderboard();
-        // Наполняем ленту стартовыми знаками
-        for(let i=0; i<5; i++) {
-            const div = document.createElement('div');
-            div.className = "i c";
-            div.innerText = "???";
-            document.getElementById('tape').appendChild(div);
-        }
     </script>
 </body>
 </html>
