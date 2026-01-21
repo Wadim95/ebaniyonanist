@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Reason Case Ultimate</title>
+    <title>Reason Case</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         body {
             background: #0f0f10;
             color: white;
-            font-family: -apple-system, sans-serif;
+            font-family: sans-serif;
             margin: 0;
             display: flex;
             flex-direction: column;
@@ -18,22 +18,16 @@
             height: 100vh;
             overflow: hidden;
         }
-
-        .header { text-align: center; margin-bottom: 20px; }
-        
-        /* Рулетка */
         .wrapper {
             position: relative;
             width: 100%;
             height: 100px;
             background: rgba(255,255,255,0.05);
-            border-top: 1px solid rgba(255,255,255,0.1);
-            border-bottom: 1px solid rgba(255,255,255,0.1);
             overflow: hidden;
             display: flex;
             align-items: center;
+            border-y: 1px solid rgba(255,255,255,0.1);
         }
-
         .line {
             position: absolute;
             left: 50%;
@@ -41,82 +35,56 @@
             height: 100%;
             background: #007aff;
             z-index: 10;
-            box-shadow: 0 0 10px #007aff;
         }
-
         .tape {
             display: flex;
             position: absolute;
             transition: transform 5s cubic-bezier(0.1, 0, 0, 1);
         }
-
         .item {
             min-width: 200px;
             text-align: center;
             font-weight: bold;
             font-size: 14px;
-            padding: 10px;
         }
-
-        /* Кнопка прямо в HTML */
-        .main-button {
+        .btn {
             margin-top: 40px;
             background: #007aff;
             color: white;
             border: none;
-            padding: 18px 50px;
-            border-radius: 15px;
-            font-size: 18px;
+            padding: 15px 40px;
+            border-radius: 12px;
             font-weight: bold;
-            cursor: pointer;
-            box-shadow: 0 4px 15px rgba(0,122,255,0.3);
-            z-index: 100;
+            font-size: 16px;
         }
-
-        .main-button:active { transform: scale(0.95); opacity: 0.8; }
-
-        #result {
-            margin-top: 20px;
-            height: 50px;
-            text-align: center;
-            color: #8e8e93;
-            padding: 0 20px;
-        }
-
-        /* Редкости */
         .r-common { color: #8e8e93; }
         .r-rare { color: #af52de; }
         .r-legendary { color: #ff3b30; }
-        .r-ancient { color: #ffcc00; text-shadow: 0 0 10px rgba(255,204,0,0.5); }
+        .r-ancient { color: #ffcc00; }
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <h1 style="margin:0">REASON CASE</h1>
-        <p style="color:#8e8e93; font-size:12px">Твое оправдание на сегодня</p>
-    </div>
-
+    <h2 style="margin-bottom:20px">REASON CASE</h2>
+    
     <div class="wrapper">
         <div class="line"></div>
-        <div class="tape" id="tape"></div>
+        <div id="tape" class="tape"></div>
     </div>
 
-    <div id="result">Жми на кнопку ниже 👇</div>
+    <div id="result" style="margin-top:20px; color:#8e8e93;">Готов?</div>
 
-    <button class="main-button" id="spinBtn" onclick="spin()">КРУТИТЬ КЕЙС</button>
+    <button class="btn" id="go" onclick="spin()">КРУТИТЬ</button>
 
     <script>
         const tg = window.Telegram.WebApp;
         tg.expand();
 
-        const reasons = [
+        const data = [
             { t: "А ХУЛИ НЕТ, КОГДА ДА?", r: "common" },
             { t: "РУКА — ВЕРНЫЙ ДРУГ", r: "common" },
-            { t: "ВМЕСТО ПОИСКА РАБОТЫ", r: "common" },
             { t: "ДЕШЕВЛЕ, ЧЕМ СВИДАНИЕ", r: "common" },
             { t: "ПОТОМУ ЧТО ТЫ — ОДИНОЧКА", r: "rare" },
-            { t: "АКЦИЯ: 15 МИНУТ ПОЗОРА И СПАТЬ", r: "rare" },
             { t: "ГЕНОЦИД БУДУЩИХ ГЕНИЕВ", r: "legendary" },
             { t: "МАМИН КОВБОЙ, ИНТЕРНЕТ ГЕРОЙ", r: "legendary" },
             { t: "★ ПРЕМИЯ ДАРВИНА В РУКАХ", r: "ancient" },
@@ -124,55 +92,43 @@
         ];
 
         function spin() {
-            const btn = document.getElementById('spinBtn');
-            btn.disabled = true;
-            btn.style.opacity = '0.5';
-            
-            if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
+            const btn = document.getElementById('go');
             const tape = document.getElementById('tape');
-            const resultDiv = document.getElementById('result');
+            const res = document.getElementById('result');
             
-            tape.innerHTML = '';
-            tape.style.transition = 'none';
-            tape.style.transform = 'translateX(0)';
-            resultDiv.innerText = "Генерация кринжа...";
+            btn.disabled = true;
+            res.innerText = "Крутим...";
+            tape.innerHTML = "";
+            tape.style.transition = "none";
+            tape.style.transform = "translateX(0)";
 
-            const total = 40;
-            const itemWidth = 200;
-            const pool = [];
-
-            for (let i = 0; i < total; i++) {
-                const res = reasons[Math.floor(Math.random() * reasons.length)];
-                pool.push(res);
-                const div = document.createElement('div');
-                div.className = item r-${res.r};
-                div.innerText = res.t;
-                tape.appendChild(div);
+            const items = [];
+            for (let i = 0; i < 40; i++) {
+                const item = data[Math.floor(Math.random() * data.length)];
+                items.push(item);
+                const d = document.createElement('div');
+                d.className = "item r-" + item.r;
+                d.innerText = item.t;
+                tape.appendChild(d);
             }
 
             setTimeout(() => {
-                const target = total - 5;
-                const center = window.innerWidth / 2;
-                const finalPos = (target * itemWidth) + (itemWidth / 2) - center;
-                
-                tape.style.transition = 'transform 5s cubic-bezier(0.1, 0, 0, 1)';
-                tape.style.transform = translateX(-${finalPos}px);
-
+                const target = 35;
+                const offset = (target * 200) + 100 - (window.innerWidth / 2);
+                tape.style.transition = "transform 5s cubic-bezier(0.1, 0, 0, 1)";
+                tape.style.transform = "translateX(-" + offset + "px)";
                 setTimeout(() => {
-                    const win = pool[target];
-                    resultDiv.innerHTML = Вердикт: <b class="r-${win.r}">${win.t}</b>;
+                    const win = items[target];
+                    res.innerHTML = "Вердикт: <b class='r-" + win.r + "'>" + win.t + "</b>";
                     if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('heavy');
                     btn.disabled = false;
-                    btn.style.opacity = '1';
-                    btn.innerText = "ЕЩЕ РАЗ?";
                 }, 5100);
             }, 50);
         }
-
-        // На всякий случай заполним ленту при старте
-        spin(); 
-        // Сразу сбросим результат, чтобы не палить сразу
-        document.getElementById('result').innerText = "Готов?";
+        
+        // Инициализация пустой ленты
+        spin();
+        document.getElementById('result').innerText = "Жми кнопку!";
     </script>
 </body>
 </html>
