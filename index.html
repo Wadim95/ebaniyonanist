@@ -3,138 +3,148 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Reason Case Online</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root { --blue: #007aff; --bg: #0b0b0c; --card: #161618; }
-        body { background: var(--bg); color: #fff; font-family: sans-serif; margin: 0; display: flex; flex-direction: column; align-items: center; height: 100vh; overflow-y: auto; padding-bottom: 40px; }
+        body { background: var(--bg); color: #fff; font-family: sans-serif; margin: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; overflow-x: hidden; }
         
-        .header { text-align: center; padding: 20px; }
-        .w { position: relative; width: 100%; height: 80px; background: var(--card); overflow: hidden; display: flex; align-items: center; border-y: 1px solid #222; }
-        .l { position: absolute; left: 50%; width: 2px; height: 100%; background: var(--blue); z-index: 5; box-shadow: 0 0 10px var(--blue); }
+        .u-panel { width: 90%; background: var(--card); border-radius: 15px; padding: 15px; margin-top: 20px; border: 1px solid #222; display: flex; justify-content: space-between; align-items: center; box-sizing: border-box; }
+        .u-rank { color: var(--blue); font-size: 10px; text-transform: uppercase; font-weight: 900; }
+        
+        .w { position: relative; width: 100%; height: 80px; background: var(--card); overflow: hidden; display: flex; align-items: center; border-top: 1px solid #333; border-bottom: 1px solid #333; margin: 40px 0; }
+        .l { position: absolute; left: 50%; width: 2px; height: 100%; background: var(--blue); z-index: 5; box-shadow: 0 0 15px var(--blue); }
         .t { display: flex; position: absolute; left: 0; transition: transform 4s cubic-bezier(0.1, 0, 0, 1); }
-        .i { min-width: 180px; text-align: center; font-weight: bold; font-size: 13px; text-transform: uppercase; }
+        .i { min-width: 200px; text-align: center; font-weight: 800; font-size: 13px; text-transform: uppercase; }
         
-        .btn { margin-top: 30px; background: var(--blue); color: #fff; border: none; padding: 16px 50px; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; }
-        .btn:disabled { opacity: 0.5; }
+        .btn { width: 85%; background: var(--blue); color: #fff; border: none; padding: 18px; border-radius: 16px; font-size: 16px; font-weight: bold; margin-bottom: 20px; box-shadow: 0 0 20px rgba(0,122,255,0.3); cursor: pointer; }
+        .btn:disabled { background: #333; box-shadow: none; }
 
-        #res { margin-top: 20px; font-size: 16px; text-align: center; height: 45px; color: #8e8e93; font-weight: bold; padding: 0 10px;}
+        #res { text-align: center; padding: 0 20px; min-height: 50px; font-weight: bold; margin-bottom: 10px; }
         
-        /* Таблица лидеров */
-        .lb { width: 85%; background: var(--card); border-radius: 12px; padding: 15px; margin-top: 30px; border: 1px solid #222; }
-        .lb-title { font-size: 10px; color: #555; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
-        .lb-item { display: flex; justify-content: space-between; font-size: 14px; padding: 5px 0; border-bottom: 1px solid #222; }
-        .rank-1 { color: #ffcc00; }
-
-        /* Цвета редкостей */
-        .c { color: #8e8e93; } .r { color: #af52de; } .lg { color: #ff3b30; } .a { color: #ffcc00; text-shadow: 0 0 8px #ffcc00; }
+        .lb { width: 90%; background: var(--card); border-radius: 15px; padding: 15px; border: 1px solid #222; margin-bottom: 30px; box-sizing: border-box; }
+        .lb-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #222; font-size: 14px; }
+        .lb-item:last-child { border: none; }
+        
+        .c { color: #8e8e93; } .r { color: #af52de; } .lg { color: #ff3b30; } .a { color: #ffcc00; text-shadow: 0 0 10px #ffcc00; }
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <h2 style="margin:0; letter-spacing:2px;">REASON CASE</h2>
-        <div id="u-name" style="font-size:12px; color:var(--blue); margin-top:5px;">Загрузка...</div>
+    <div class="u-panel">
+        <div>
+            <div id="u-name" style="font-weight:bold">Загрузка...</div>
+            <div id="u-status" class="u-rank">Статус: Познание</div>
+        </div>
+        <div style="text-align:right">
+            <div style="font-size:9px; color:#555">ВСЕГО КРУТОК:</div>
+            <div id="u-count" style="font-weight:bold; color:var(--blue)">0</div>
+        </div>
     </div>
-    
+
+    <div id="res" style="margin-top:30px">ГОТОВ УЗНАТЬ ПРАВДУ?</div>
+
     <div class="w">
         <div class="l"></div>
         <div id="tape" class="t"></div>
     </div>
 
-    <div id="res">ГОТОВ УЗНАТЬ ПРАВДУ?</div>
-
-    <button class="btn" id="go" onclick="spin()">КРУТИТЬ КЕЙС</button>
+    <button class="btn" id="go" onclick="spin()">ОТКРЫТЬ КЕЙС</button>
 
     <div class="lb">
-        <div class="lb-title">Зал Славы (Топ чемпионов)</div>
-        <div id="leaderboard-list">
-            <div style="color:#333; font-size:12px;">Загрузка списка...</div>
-        </div>
+        <div style="font-size:10px; color:#555; margin-bottom:10px; text-transform:uppercase;">Зал Славы (Live)</div>
+        <div id="leaderboard-list" style="color:#444; font-size:12px;">Синхронизация с сервером...</div>
     </div>
 
     <script>
-        // --- НАСТРОЙКИ ---
         const tg = window.Telegram.WebApp;
-        // ВСТАВЬ СЮДА СВОЮ ССЫЛКУ ИЗ LOCALTUNNEL!
-        const API_URL = 'https://hot-jars-flash.loca.lt'; 
-        
         tg.expand();
-        const user = tg.initDataUnsafe.user || { first_name: 'Аноним', username: 'anon' };
-        document.getElementById('u-name').innerText = 'Грешник: ' + (user.username || user.first_name);
+        
+        // --- ВСТАВЬ СЮДА ССЫЛКУ С RENDER ---
+        const API_URL = 'https://твой-проект.onrender.com'; 
+        
+        const user = tg.initDataUnsafe.user || { first_name: 'Грешник', username: 'anon' };
+        document.getElementById('u-name').innerText = user.username || user.first_name;
 
-        const d = [
-            {t: "А ХУЛИ НЕТ?", r: "c"}, {t: "ПРОСТО ТАК", r: "c"}, {t: "СЕРЬЁЗНО?", r: "r"},
-            {t: "БЕЗ РУЛЕТКИ НИКАК?", r: "r"}, {t: "ГЕНОЦИД ГЕНИЕВ", r: "lg"}, 
-            {t: "МАМИН КОВБОЙ", r: "lg"}, {t: "★ МАСТЕР САМООБМАНА", r: "a"}, 
-            {t: "★ ПРЕМИЯ ДАРВИНА", r: "a"}, {t: "НЕ ОПРАВДЫВАЙСЯ", r: "r"}
+        const reasons = [
+            {t: "А ХУЛИ НЕТ?", r: "c"}, {t: "СЕРЬЁЗНО?", r: "r"}, {t: "ДЕШЕВЛЕ СВИДАНИЯ", r: "c"},
+            {t: "МАМИН КОВБОЙ", r: "lg"}, {t: "ГЕНОЦИД ГЕНИЕВ", r: "lg"}, {t: "БЕЗ РУЛЕТКИ НИКАК?", r: "r"},
+            {t: "★ МАСТЕР САМООБМАНА", r: "a"}, {t: "★ ПРЕМИЯ ДАРВИНА", r: "a"}, {t: "НЕ ОПРАВДЫВАЙСЯ", r: "r"}
         ];
-
         function loadLeaderboard() {
-            fetch(API_URL + '/api/leaderboard')
+            fetch(${API_URL}/api/leaderboard)
                 .then(r => r.json())
                 .then(data => {
                     const list = document.getElementById('leaderboard-list');
                     list.innerHTML = '';
                     data.forEach((h, i) => {
                         list.innerHTML += <div class="lb-item">
-                            <span class="${i===0?'rank-1':''}">${i+1}. ${h.username}</span>
+                            <span class="${i===0?'a':''}">${i+1}. ${h.username}</span>
                             <span style="color:var(--blue)">${h.spins}</span>
                         </div>;
                     });
-                }).catch(e => console.error('Ошибка топа:', e));
+                })
+                .catch(() => {
+                    document.getElementById('leaderboard-list').innerHTML = 'Сервер просыпается... (подожди 30 сек)';
+                });
         }
 
         function spin() {
             const btn = document.getElementById('go');
             const tape = document.getElementById('tape');
             const res = document.getElementById('res');
-            
             btn.disabled = true;
-            res.innerText = "СУДЬБА РЕШАЕТ...";
+            res.className = "";
+            res.innerText = "СУДЬБА РЕШАЕТСЯ...";
+            
             tape.innerHTML = "";
             tape.style.transition = "none";
             tape.style.transform = "translateX(0)";
 
-            const items = [];
-            for (let i = 0; i < 40; i++) {
-                const it = d[Math.floor(Math.random() * d.length)];
-                items.push(it);
+            const pool = [];
+            for (let i = 0; i < 45; i++) {
+                const item = reasons[Math.floor(Math.random() * reasons.length)];
+                pool.push(item);
                 const div = document.createElement('div');
-                div.className = "i " + it.r;
-                div.innerText = it.t;
+                div.className = "i " + item.r;
+                div.innerText = item.t;
                 tape.appendChild(div);
             }
 
             setTimeout(() => {
-                const target = 35;
-                const offset = (target * 180) + 90 - (window.innerWidth / 2);
+                const target = 40;
+                const offset = (target * 200) + 100 - (window.innerWidth / 2);
                 tape.style.transition = "transform 4s cubic-bezier(0.1, 0, 0, 1)";
-                tape.style.transform = "translateX(-" + offset + "px)";
+                tape.style.transform = translateX(-${offset}px);
 
                 setTimeout(() => {
-                    const win = items[target];
+                    const win = pool[target];
                     res.innerHTML = ВЕРДИКТ: <span class="${win.r}">${win.t}</span>;
-                    if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('heavy');
                     
-                    // ОТПРАВЛЯЕМ ДАННЫЕ НА СЕРВЕР
-                    fetch(API_URL + '/api/spin', {
+                    // Отправляем данные
+                    fetch(${API_URL}/api/spin, {
                         method: 'POST',
                         headers: {'Content-Type': 'application/json'},
                         body: JSON.stringify({ username: user.username || user.first_name })
-                    }).then(() => {
+                    }).finally(() => {
                         loadLeaderboard();
                         btn.disabled = false;
+                        btn.innerText = "ЕЩЕ РАЗ";
                     });
+
+                    if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('warning');
                 }, 4100);
             }, 50);
         }
 
-        // Загружаем топ при старте
+        // Запуск
         loadLeaderboard();
-        // Наполняем ленту для вида
-        spin(); 
-        setTimeout(() => { document.getElementById('res').innerText = "ЖМИ КНОПКУ!"; }, 100);
+        // Наполняем ленту стартовыми знаками
+        for(let i=0; i<5; i++) {
+            const div = document.createElement('div');
+            div.className = "i c";
+            div.innerText = "???";
+            document.getElementById('tape').appendChild(div);
+        }
     </script>
 </body>
 </html>
