@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>TG Reason Roulette</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        :root {
+            --bg-color: var(--tg-theme-bg-color, #1c1c1d);
+            --text-color: var(--tg-theme-text-color, #ffffff);
+            --hint-color: var(--tg-theme-hint-color, #8e8e93);
+            --link-color: var(--tg-theme-link-color, #248bfe);
+            --secondary-bg: var(--tg-theme-secondary-bg-color, #242424);
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        .chat-container {
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .bot-header { margin-bottom: 30px; }
+        .bot-header .icon { font-size: 60px; margin-bottom: 10px; }
+        
+        /* Рулетка */
+        .viewport {
+            position: relative;
+            width: 100%;
+            height: 100px;
+            background: var(--secondary-bg);
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            align-items: center;
+        }
+
+        .line {
+            position: absolute;
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: var(--link-color);
+            z-index: 10;
+            transform: translateX(-50%);
+            box-shadow: 0 0 10px var(--link-color);
+        }
+
+        .tape {
+            display: flex;
+            position: absolute;
+            left: 0;
+            height: 100%;
+            align-items: center;
+            transition: transform 4s cubic-bezier(0.1, 0, 0.1, 1);
+        }
+
+        .reason-card {
+            min-width: 220px;
+            text-align: center;
+            font-weight: 700;
+            font-size: 16px;
+            padding: 0 20px;
+            white-space: normal;
+            line-height: 1.2;
+        }
+
+        /* Цвета редкостей */
+        .r-common { color: var(--hint-color); }
+        .r-rare { color: #bf5af2; }
+        .r-legendary { color: #ff453a; }
+        .r-ancient { 
+            color: #ffd60a; 
+            text-shadow: 0 0 10px rgba(255,214,10,0.5);
+            font-size: 18px;
+        }
+
+        #status {
+            margin-top: 20px;
+            font-size: 15px;
+            color: var(--hint-color);
+            padding: 0 20px;
+            height: 40px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="chat-container">
+        <div class="bot-header">
+            <div class="icon">🤘</div>
+            <h2 style="margin: 0;">Причинолятор</h2>
+            <p id="sub-header" style="color: var(--hint-color); font-size: 14px;">Судьба дрочки-одиночки решает...</p>
+        </div>
+
+        <div class="viewport">
+            <div class="line"></div>
+            <div class="tape" id="tape"></div>
+        </div>
+
+        <div id="status">Нажми на кнопку внизу</div>
+    </div>
+
+    <script>
+        const tg = window.Telegram.WebApp;
+        tg.expand();
+        tg.ready();
+
+        // Настройка главной кнопки ТГ
+        tg.MainButton.setText("ИСПЫТАТЬ УДАЧУ");
+        tg.MainButton.show();
+        tg.MainButton.onClick(() => spin());
+
+        const reasons = [
+            { t: "А хули нет, когда да?", r: "common" },
+            { t: "Твоя правая — твоя единственная", r: "common" },
+{ t: "Дешевле, чем свидание", r: "common" },
+            { t: "Тренажерка для бедных", r: "common" },
+            { t: "Потому что ты — Дрочка-одиночка", r: "rare" },
+            { t: "Акция: 15 минут позора и спать", r: "rare" },
+            { t: "Утешительный приз за жизнь", r: "rare" },
+            { t: "Геноцид потенциальных гениев", r: "legendary" },
+            { t: "ИНТЕРНЕТ-ГЕРОЙ, МАМИН КОВБОЙ", r: "legendary" },
+            { t: "★ СТАТУС: ЛЕГЕНДАРНЫЙ ОДИНОЧКА", r: "ancient" },
+            { t: "★ МАСТЕР-КЛАСС ПО САМООБМАНУ", r: "ancient" },
+            { t: "А КТО ТЕБЕ ЗАПРЕТИТ?", r: "common" },
+            { t: "НУ, ТЫ ЖЕ ЗНАЕШЬ: РУКИ-БОЗУКИ", r: "rare" }
+        ];
+
+        const tape = document.getElementById('tape');
+        const status = document.getElementById('status');
+        const cardWidth = 220;
+
+        function spin() {
+            // Вибрация при старте
+            tg.HapticFeedback.notificationOccurred('success');
+            tg.MainButton.disable();
+            
+            tape.innerHTML = '';
+            tape.style.transition = 'none';
+            tape.style.transform = 'translateX(0)';
+            status.innerText = "Колесо фортуны скрипит...";
+
+            const total = 30;
+            const pool = [];
+
+            for (let i = 0; i < total; i++) {
+                const rand = Math.random() * 100;
+                let res;
+                if (rand > 95) res = reasons.filter(r => r.r === 'ancient')[Math.floor(Math.random()*2)];
+                else if (rand > 80) res = reasons.filter(r => r.r === 'legendary')[Math.floor(Math.random()*2)];
+                else if (rand > 50) res = reasons.filter(r => r.r === 'rare')[Math.floor(Math.random()*3)];
+                else res = reasons.filter(r => r.r === 'common')[Math.floor(Math.random()*4)];
+                
+                pool.push(res || reasons[0]);
+                const el = document.createElement('div');
+                el.className = reason-card r-${pool[i].r};
+                el.innerText = pool[i].t;
+                tape.appendChild(el);
+            }
+
+            setTimeout(() => {
+                const target = total - 4;
+                const centerOffset = (document.querySelector('.viewport').offsetWidth / 2);
+                const finalPos = (target * cardWidth) + (cardWidth / 2) - centerOffset;
+                
+                tape.style.transition = 'transform 4s cubic-bezier(0.1, 0, 0.1, 1)';
+                tape.style.transform = translateX(-${finalPos}px);
+
+                // Эффект вибрации в конце
+                setTimeout(() => {
+                    const win = pool[target];
+                    status.innerHTML = Твой вердикт: <b class="r-${win.r}">${win.t}</b>;
+                    tg.HapticFeedback.impactOccurred('heavy');
+                    tg.MainButton.enable();
+                    tg.MainButton.setText("ЕЩЕ РАЗ?");
+                }, 4100);
+            }, 50);
+        }
+    </script>
+</body>
+</html>
